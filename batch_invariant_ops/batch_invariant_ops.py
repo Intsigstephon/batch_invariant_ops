@@ -501,7 +501,8 @@ def enable_batch_invariant_mode():
     global _batch_invariant_MODE, _batch_invariant_LIB
     if _batch_invariant_MODE:
         return
-    dispatch_key = getattr(torch.accelerator.current_accelerator(), "type", "cpu").upper()
+    #dispatch_key = getattr(torch.accelerator.current_accelerator(), "type", "cpu").upper()
+    dispatch_key = "PrivateUse1"
     _batch_invariant_MODE = True
     _batch_invariant_LIB = torch.library.Library("aten", "IMPL")
     _batch_invariant_LIB.impl("aten::mm", mm_batch_invariant, dispatch_key)
