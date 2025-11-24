@@ -7,6 +7,7 @@ A companion library release to https://thinkingmachines.ai/blog/defeating-nondet
 This library primarily leverages torch.Library to sub out existing PyTorch kernels with "batch-invariant" ones. This allows many existing PyTorch models to use the batch-invariant ops with low overhead and non-intrusive code changes.
 
 ## Installation
+ Install `triton-ascend` according to [installation](https://gitcode.com/Ascend/triton-ascend/blob/master/docs/sources/getting-started/installation.md)
 
 ```bash
 pip install -e .
@@ -82,3 +83,8 @@ with set_batch_invariant_mode(True):
 
 ### Reduction Operations
 - `torch.mean()` - Mean computation along specified dimensions
+
+### Performance
+- Mean triton kernel is 3.8X times consumed compared to Ascend-c Undeterministic 
+implementation
+- Ascend-C log-softmax op is deterministic

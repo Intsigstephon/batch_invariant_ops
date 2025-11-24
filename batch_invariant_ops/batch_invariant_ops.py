@@ -341,33 +341,28 @@ def mean_kernel(
     Input is viewed as (M, N, K) where N is the dimension being reduced.
     """
     # Program ID gives us which output element we're computing
-    pid = tl.program_id(0)
-
-    # Compute output indices
-    m_idx = pid // K
-    k_idx = pid % K
-
-    # Bounds check
-    if m_idx >= M or k_idx >= K:
-        return
+    m_pid = tl.program_id(0)
+    num_pids = tl.num_programs(0)
 
     # Accumulate sum across reduction dimension
-    acc = 0.0
-    for n_start in range(0, N, BLOCK_SIZE):
-        n_offsets = n_start + tl.arange(0, BLOCK_SIZE)
-        mask = n_offsets < N
+    for pid in range(m_pid, M, num_pids):
+        for k_idx in range(0, K):
+            acc = 0.0
+            for n_start in range(0, N, BLOCK_SIZE):
+                n_offsets = n_start + tl.arange(0, BLOCK_SIZE)
+                mask = n_offsets < N
 
-        # Calculate input indices
-        input_idx = m_idx * input_stride0 + n_offsets * input_stride1 + k_idx * input_stride2
+                # Calculate input indices
+                input_idx = pid * input_stride0 + n_offsets * input_stride2 + k_idx * input_stride1
 
-        # Load and accumulate
-        vals = tl.load(input_ptr + input_idx, mask=mask, other=0.0)
-        acc += tl.sum(vals)
+                # Load and accumulate
+                vals = tl.load(input_ptr + input_idx, mask=mask, other=0.0)
+                acc += tl.sum(vals)
 
-    # Compute mean and store
-    mean_val = acc / N
-    output_idx = m_idx * output_stride0 + k_idx * output_stride1
-    tl.store(output_ptr + output_idx, mean_val)
+            # Compute mean and store
+            mean_val = acc / N
+            output_idx = pid * output_stride0 + k_idx * output_stride1
+            tl.store(output_ptr + output_idx, mean_val)
 
 
 def mean_dim(
@@ -422,6 +417,7 @@ def mean_dim(
 
     # Reshape input to 3D view (M, N, K)
     input_3d = input.reshape(M, N, K)
+    input_3d = input_3d.transpose(1, 2).contiguous()   #M, N, K -> M, K, N
 
     # Create output shape
     if keepdim:
@@ -439,9 +435,9 @@ def mean_dim(
     else:
         output_2d = output.reshape(M, K)
 
-    # Launch kernel
-    grid = (M * K,)
-    BLOCK_SIZE = 1024
+    # Launch kernel: in npu: you must limit that the max_grids is 48
+    grid = (40,)   
+    BLOCK_SIZE = 4096
 
     mean_kernel[grid](
         input_3d,
