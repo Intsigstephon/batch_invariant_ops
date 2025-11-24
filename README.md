@@ -86,7 +86,7 @@ with set_batch_invariant_mode(True):
 ### Reduction Operations
 - `torch.mean()` - Mean computation along specified dimensions
 
-### Performance
-- Mean triton kernel is 3.8X times consumed compared to Ascend-c Undeterministic 
+## Performance
+- Mean triton kernel is 3.8X times consumed compared to Ascend-C Undeterministic 
 implementation
 - Ascend-C log-softmax op is deterministic
