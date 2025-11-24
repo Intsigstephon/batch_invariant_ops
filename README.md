@@ -7,7 +7,9 @@ A companion library release to https://thinkingmachines.ai/blog/defeating-nondet
 This library primarily leverages torch.Library to sub out existing PyTorch kernels with "batch-invariant" ones. This allows many existing PyTorch models to use the batch-invariant ops with low overhead and non-intrusive code changes.
 
 ## Installation
- Install `triton-ascend` according to [installation](https://gitcode.com/Ascend/triton-ascend/blob/master/docs/sources/getting-started/installation.md)
+ First, Install `triton-ascend` according to [installation](https://gitcode.com/Ascend/triton-ascend/blob/master/docs/sources/getting-started/installation.md).
+ 
+ Then, install `batch_invariant_ops` with command below: 
 
 ```bash
 pip install -e .
